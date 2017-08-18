@@ -148,6 +148,11 @@ class App:
         self.draw = ImageDraw.Draw(self.image)
         self.font = ImageFont.load_default()
     
+    def __del__(self):
+        self.disp.clear()
+        self.disp.display()
+        os.system(self.cls)
+    
     def getch_unix(self):
         import sys, tty, termios
         fd = sys.stdin.fileno()
@@ -197,8 +202,7 @@ class App:
             self.vb = [Matrix.matmul14proj((self.vb[x][0], self.vb[x][1], self.vb[x][2],1), self.projscreen) for x in range(len(self.obj.vertex))]
             
             self.draw_wire()
-            os.system('clear')
-            print('quit z key')
+            os.system(self.cls)
             g = self.getch()
             if g == 's' : self.move_z += 4
             if g == 'a' : self.move_x -= 4
@@ -207,13 +211,12 @@ class App:
             if g == 'e' : self.rot_y += 8
             if g == 'q' : self.rot_y -= 8
             rot_y = (360 + self.rot_y) % 360
-            if g == 'z':
-                self.disp.clear()
-                self.disp.display()
-                print('')
-                break
-
-if __name__ == '__main__':
+            if g == 'z' : break
+    
+def main():
     if len(sys.argv) > 1:
         app = App(sys.argv[1])
         app.loop()
+
+if __name__ == '__main__':
+    main()
