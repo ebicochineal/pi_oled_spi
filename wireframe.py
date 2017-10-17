@@ -21,7 +21,7 @@ class Vector3:
 
     @staticmethod
     def Div(vec, d):
-        return [vec[0] / float(d), vec[1] / float(d), vec[2] / float(d)]
+        return [vec[0] / d, vec[1] / d, vec[2] / d]
 
     @staticmethod
     def Dot(vec1, vec2):
@@ -34,8 +34,8 @@ class Vector3:
     @staticmethod
     def Normalize(vec):
         if math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]) != 0:
-            return [vec[0] / float(math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])),vec[1] / float(math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])),vec[2] / float(math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]))]
-        return [0.0, 0.0, 0.0]
+            return [vec[0] / math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]),vec[1] / math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]),vec[2] / math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])]
+        return [0, 0, 0]
 
     @staticmethod
     def Reflect(vec, nor):
@@ -69,7 +69,7 @@ class Matrix:
             for o in range(4):
                 r[k] += v[o] * m[o][k]
         if r[3] > 0:
-            return [r[0] / float(r[3]), r[1] / float(r[3]), r[2] / float(r[3])]
+            return [r[0] / r[3], r[1] / r[3], r[2] / r[3]]
         else:
             return [r[0], r[1], r[2]]
     
@@ -100,19 +100,19 @@ class Matrix:
     
     @staticmethod
     def Projection(cvx, cvy):
-        aspect =  float(cvx)/float(cvy)
+        aspect =  cvx / cvy
         fov = math.radians(45)
-        near = 4.0
-        far = 40.0
-        sy = 1.0/math.tan(fov * 0.5)
+        near = 4
+        far = 40
+        sy = 1 / math.tan(fov * 0.5)
         sx = sy / aspect
         sz = far / (near - far)
-        return [sx, 0.0, 0.0, 0.0], [0.0, sy, 0.0, 0.0], [0.0, 0.0, sz, -1.0], [0.0, 0.0, sz * near, 0.0]
+        return [sx, 0, 0, 0], [0, sy, 0, 0], [0, 0, sz, -1], [0, 0, sz * near, 0]
     
     @staticmethod
     def Screen(cvx, cvy):
-        hcvx = cvx // 2
-        hcvy = cvy // 2
+        hcvx = cvx / 2
+        hcvy = cvy / 2
         return [hcvx, 0, 0, 0], [0, -hcvy, 0, 0], [0, 0, 1, 0], [hcvx, hcvy, 0, 1]
 
 class App:
