@@ -43,9 +43,6 @@ class Vector3:
 
 class Object3D:
     def __init__(self, vertex, index):
-        self.position = [0, 0, 0]
-        self.rotation = [0, 0, 0]
-        self.scale = [1, 1, 1]
         self.vertex = vertex
         self.index = index
     
@@ -66,7 +63,7 @@ class Object3D:
 
 class Matrix:
     @staticmethod
-    def matmul14proj(v, m):
+    def Mul14Proj(v, m):
         r = [0, 0, 0, 0]
         for k in range(4):
             for o in range(4):
@@ -77,7 +74,7 @@ class Matrix:
             return [r[0], r[1], r[2]]
     
     @staticmethod
-    def matmul14(v, m):
+    def Mul14(v, m):
         r = [0, 0, 0, 0]
         for k in range(4):
             for o in range(4):
@@ -85,7 +82,7 @@ class Matrix:
         return r
 
     @staticmethod
-    def matmul44(v, m):
+    def Mul44(v, m):
         r = ([0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0])
         for i in range(4):
             for k in range(4):
@@ -94,15 +91,15 @@ class Matrix:
         return r
     
     @staticmethod
-    def world_matrix(rot, pos, move):
+    def World(rot, pos, move):
         r = ([1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1])
-        r = Matrix.matmul44(r, rot)
-        r = Matrix.matmul44(r, pos)
-        r = Matrix.matmul44(r, move)
+        r = Matrix.Mul44(r, rot)
+        r = Matrix.Mul44(r, pos)
+        r = Matrix.Mul44(r, move)
         return r
     
     @staticmethod
-    def MatrixPerspectiveFovRH(cvx, cvy):
+    def Projection(cvx, cvy):
         aspect =  float(cvx)/float(cvy)
         fov = math.radians(45)
         near = 4.0
@@ -110,7 +107,13 @@ class Matrix:
         sy = 1.0/math.tan(fov * 0.5)
         sx = sy / aspect
         sz = far / (near - far)
-        return [sx,0.0,0.0,0.0], [0.0,sy,0.0,0.0], [0.0,0.0,sz,-1.0], [0.0,0.0,sz * near,0.0]
+        return [sx, 0.0, 0.0, 0.0], [0.0, sy, 0.0, 0.0], [0.0, 0.0, sz, -1.0], [0.0, 0.0, sz * near, 0.0]
+    
+    @staticmethod
+    def Screen(cvx, cvy):
+        hcvx = cvx // 2
+        hcvy = cvy // 2
+        return [hcvx, 0, 0, 0], [0, -hcvy, 0, 0], [0, 0, 1, 0], [hcvx, hcvy, 0, 1]
 
 class App:
     def __init__(self, filepath):
@@ -119,13 +122,11 @@ class App:
         self.move_x = 0
         self.move_z = 0
         self.rot_y = 0
-        hcvx = self.cvx // 2
-        hcvy = self.cvy // 2
         self.obj = Object3D.Load(filepath)
         self.vb = None
-        proj = Matrix.MatrixPerspectiveFovRH(self.cvx, self.cvy)
-        screen = [hcvx, 0, 0, 0], [0, -hcvy, 0, 0], [0, 0, 1, 0], [hcvx, hcvy, 0, 1]
-        self.projscreen = Matrix.matmul44(Matrix.matmul44(([1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]), proj), screen)
+        proj = Matrix.Projection(self.cvx, self.cvy)
+        screen = Matrix.Screen(self.cvx, self.cvy)
+        self.projscreen = Matrix.Mul44(Matrix.Mul44(([1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]), proj), screen)
         self.getch = None
         self.cls = None
         if 'win' in sys.platform and 'darwin' != sys.platform:
@@ -196,10 +197,10 @@ class App:
             move = [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [self.move_x * 0.2, 0, self.move_z * 0.2, 1]
             pos = [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, -2, -16, 1]
             rot = [math.cos(math.radians(self.rot_y)), 0, math.sin(math.radians(self.rot_y)), 0], [0, 1, 0, 0], [-math.sin(math.radians(self.rot_y)), 0, math.cos(math.radians(self.rot_y)), 0], [0, 0, 0, 1]
-            mat = Matrix.world_matrix(rot, pos, move)
+            mat = Matrix.World(rot, pos, move)
 
-            self.vb = [Matrix.matmul14((self.obj.vertex[x][0], self.obj.vertex[x][1], self.obj.vertex[x][2], 1), mat) for x in range(len(self.obj.vertex))]
-            self.vb = [Matrix.matmul14proj((self.vb[x][0], self.vb[x][1], self.vb[x][2],1), self.projscreen) for x in range(len(self.obj.vertex))]
+            self.vb = [Matrix.Mul14((self.obj.vertex[x][0], self.obj.vertex[x][1], self.obj.vertex[x][2], 1), mat) for x in range(len(self.obj.vertex))]
+            self.vb = [Matrix.Mul14Proj((self.vb[x][0], self.vb[x][1], self.vb[x][2],1), self.projscreen) for x in range(len(self.obj.vertex))]
             
             self.draw_wire()
             os.system(self.cls)
